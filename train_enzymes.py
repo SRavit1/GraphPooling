@@ -26,6 +26,5 @@ for (model_name, model_class) in model_classes.items():
 
   print("[INFO] Finished training " + model_name + ".")
 
-  #visualize_training(training_logs)
-
 save_logs(all_training_logs, "trainingLogs.json")
+visualize_training(all_training_logs)

@@ -59,18 +59,22 @@ def validate(model, test_data_loader, loss_function):
   print("Accuracy: {:.4f}\tLoss: {:.4f}".format(accuracy, loss))
   return accuracy, loss
 
-def visualize_training(logs):
-  fig, ax1 = plt.subplots()
-  ax1.plot(list(logs["accuracy"].keys()), list(logs["accuracy"].values()), label="accuracy", color="blue")
-  ax1.set_xlabel('epochs')
-  ax2 = ax1.twinx()
-  ax2.plot(list(logs["loss"].keys()), list(logs["loss"].values()), label="loss", color="orange")
-  plt.title("Visualization of accuracy and loss during training.")
-  ax1.legend()
-  ax2.legend()
+def visualize_training(all_training_logs):
+	fig, axes = plt.subplots(len(all_training_logs))
+	for i in range(len(all_training_logs)):
+	  model_name, logs = list(all_training_logs.items())[i]
+	  ax1 = axes[i]
+	  ax1.plot(list(logs["accuracy"].keys()), list(logs["accuracy"].values()), label="accuracy", color="blue")
+	  ax1.set_xlabel('epochs')
+	  ax1.set_title("Training of " + model_name + ".")
+	  ax1.legend()
+	  ax2 = ax1.twinx()
+	  ax2.plot(list(logs["loss"].keys()), list(logs["loss"].values()), label="loss", color="orange")
+	  
+	  ax2.legend()
 
-  fig.tight_layout()
-  plt.show()
+	fig.tight_layout()
+	plt.show()
 
 def save_logs(logs, filename):
 	with open(filename, 'w') as f:
