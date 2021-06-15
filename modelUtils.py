@@ -1,6 +1,7 @@
 import torch
 import torch_geometric
 from matplotlib import pyplot as plt
+import json
 
 def load_dataset(datasetName, train_fraction=0.9, batch_size=32):
   dataset = torch_geometric.datasets.TUDataset(root='/tmp/' + datasetName, name=datasetName)
@@ -48,8 +49,8 @@ def validate(model, test_data_loader, loss_function):
       correct += 1
     total += 1
 
-  accuracy = correct/total
-  loss = totalLoss/total
+  accuracy = float(correct/total)
+  loss = float(totalLoss/total)
   print("Accuracy: {:.4f}\tLoss: {:.4f}".format(accuracy, loss))
   return accuracy, loss
 
@@ -65,3 +66,7 @@ def visualize_training(logs):
 
   fig.tight_layout()
   plt.show()
+
+def save_logs(logs, filename):
+	with open(filename, 'w') as f:
+		json.dump(logs, f)

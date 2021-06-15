@@ -18,8 +18,6 @@ class GCN(torch.nn.Module):
         x = torch.nn.functional.dropout(x, training=self.training)
 
         x = self.conv2(x, edge_index)
-        #x = torch.nn.functional.relu(x)
-        #x = torch.nn.functional.dropout(x, training=self.training)
         
         x = torch.mean(x, 0)
         x = torch.unsqueeze(x, 0)
