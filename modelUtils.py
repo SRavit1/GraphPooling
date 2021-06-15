@@ -34,23 +34,28 @@ def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_fu
       optimizer.step()
   return logs
 
+#TODO: Use Pytorch methods for accuracy/loss calculations
 def validate(model, test_data_loader, loss_function):
   model.eval()
   correct = 0
-  total = 0
   totalLoss = 0
+  totalGraphs = 0
+  totalBatches = 0
   for batch in test_data_loader:
     prediction = model(batch)
 
     loss = loss_function(prediction, batch.y)
     totalLoss += loss
     
-    if (torch.argmax(prediction) == batch.y[0]):
-      correct += 1
-    total += 1
+    assert len(prediction) == len(batch.y), "# batches in prediction does not match # batches in target."
+    for i in range(len(prediction)):
+	    if (torch.argmax(prediction[i]) == batch.y[i]):
+	      correct += 1
+	    totalGraphs += 1
+    totalBatches += 1
 
-  accuracy = float(correct/total)
-  loss = float(totalLoss/total)
+  accuracy = float(correct/totalGraphs)
+  loss = float(totalLoss/totalBatches)
   print("Accuracy: {:.4f}\tLoss: {:.4f}".format(accuracy, loss))
   return accuracy, loss
 
