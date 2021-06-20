@@ -1,7 +1,5 @@
 import torch
 import torch_geometric
-from matplotlib import pyplot as plt
-import json
 
 def load_dataset(datasetName, train_fraction=0.9, batch_size=32):
   dataset = torch_geometric.datasets.TUDataset(root='/tmp/' + datasetName, name=datasetName)
@@ -58,24 +56,3 @@ def validate(model, test_data_loader, loss_function):
   loss = float(totalLoss/totalBatches)
   print("Accuracy: {:.4f}\tLoss: {:.4f}".format(accuracy, loss))
   return accuracy, loss
-
-def visualize_training(all_training_logs):
-	fig, axes = plt.subplots(len(all_training_logs))
-	for i in range(len(all_training_logs)):
-	  model_name, logs = list(all_training_logs.items())[i]
-	  ax1 = axes[i]
-	  ax1.plot(list(logs["accuracy"].keys()), list(logs["accuracy"].values()), label="accuracy", color="blue")
-	  ax1.set_xlabel('epochs')
-	  ax1.set_title("Training of " + model_name + ".")
-	  ax1.legend()
-	  ax2 = ax1.twinx()
-	  ax2.plot(list(logs["loss"].keys()), list(logs["loss"].values()), label="loss", color="orange")
-	  
-	  ax2.legend()
-
-	fig.tight_layout()
-	plt.show()
-
-def save_logs(logs, filename):
-	with open(filename, 'w') as f:
-		json.dump(logs, f)
