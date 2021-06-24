@@ -1,17 +1,21 @@
 import torch
 import torch_geometric
 
-def load_dataset(datasetName, train_fraction=0.9, batch_size=32):
-  dataset = torch_geometric.datasets.TUDataset(root='/tmp/' + datasetName, name=datasetName)
-  dataset = dataset.shuffle()
+def load_dataset(dataset_train, dataset_test, batch_size=32):
+  train_loader = torch_geometric.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
+  test_loader = torch_geometric.data.DataLoader(dataset_test, batch_size=batch_size)
+  return train_loader, test_loader
 
-  cutoff = int(len(dataset)*train_fraction)
-  dataset_train = dataset[:cutoff]
-  dataset_test = dataset[cutoff:]
+
+"""
+def load_dataset(dataset_train, dataset_test, batch_size=32):
+  dataset_train = dataset_train.shuffle()
+  dataset_test = dataset_test.shuffle()
 
   train_loader = torch_geometric.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
   test_loader = torch_geometric.data.DataLoader(dataset_test, batch_size=batch_size, shuffle=True)
-  return dataset, train_loader, test_loader
+  return train_loader, test_loader
+"""
 
 def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_function, validate_frequency=5):
   logs = {"accuracy":{}, "loss":{}}
@@ -20,7 +24,7 @@ def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_fu
     if (epoch%validate_frequency == 0):
       print("Epoch {} of {}".format(epoch, epochs), end='\t')
       accuracy, loss = validate(model, test_data_loader, loss_function)
-      
+
       logs["accuracy"][epoch] = accuracy
       logs["loss"][epoch] = loss
       

@@ -10,6 +10,7 @@ def visualize_training(all_training_logs):
 		for j in range(len(all_training_logs)):
 		  model_name, logs = list(all_training_logs.items())[j]
 		  ax.plot(list(logs[metric].keys()), list(logs[metric].values()), label=model_name)
+		  ax.grid(which='both')
 		  ax.set_xlabel('epochs')
 		  ax.set_title(metric)
 		  ax.legend()
