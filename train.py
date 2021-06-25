@@ -4,6 +4,7 @@ import models
 from modelUtils import train, validate, load_dataset
 from trainingUtils import visualize_training, save_logs
 import numpy as np
+import os
 
 torch.manual_seed(0)
 np.random.seed(seed=0)
@@ -16,9 +17,10 @@ dataset_test = torch_geometric.datasets.GNNBenchmarkDataset(root='/tmp/' + 'MNIS
 dataset_train = dataset_train.shuffle()
 dataset_test = dataset_test.shuffle()
 
-#TODO: Use numpy sampling or method in dataset class
-dataset_train = dataset_train[:4500]
-dataset_test = dataset_test[:500]
+train_idx = np.random.randint(len(dataset_train), size=1500)
+test_idx = np.random.randint(len(dataset_test), size=500)
+dataset_train = dataset_train[train_idx]
+dataset_test = dataset_test[test_idx]
 """
 
 dataset = torch_geometric.datasets.TUDataset(root='/tmp/' + 'ENZYMES', name='ENZYMES')
@@ -29,7 +31,7 @@ dataset_train = dataset[:cutoff]
 dataset_test = dataset[cutoff:]
 """
 
-train_loader, test_loader = load_dataset(dataset_train, dataset_test, batch_size=32)
+train_loader, test_loader = load_dataset(dataset_train, dataset_test, batch_size=128)
 
 print("[INFO] Loaded dataset.")
 
@@ -52,6 +54,11 @@ for (model_name, model_class) in model_classes.items():
   all_training_logs[model_name] = training_logs
 
   print("[INFO] Finished training " + model_name + ".")
+
+  model_save_path = os.path.join(os.getcwd(), "trainedModels", model_name+".torch")
+  torch.save(model.state_dict(), model_save_path)
+
+  print("[INFO] Saved trained", model_name, "model to path", model_save_path)
 
 save_logs(all_training_logs, "trainingLogs.json")
 visualize_training(all_training_logs)
