@@ -1,5 +1,6 @@
 import torch
 import torch_geometric
+import logger
 
 def load_dataset(dataset_train, dataset_test, batch_size=32):
   train_loader = torch_geometric.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
@@ -16,7 +17,7 @@ def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_fu
       loss.backward()
       optimizer.step()
     if (epoch%validate_frequency == 0):
-      print("Epoch {}/{}".format(epoch, epochs), end='\t')
+      logger.mainLogger.log_info("Epoch {}/{}".format(epoch, epochs), end='\t')
       model.eval()
 
       accuracy, loss = validate(model, test_data_loader, loss_function)
@@ -27,7 +28,7 @@ def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_fu
       logs["train_accuracy"][epoch] = train_accuracy
       logs["train_loss"][epoch] = train_loss
 
-      print("Valid acc: {:.4f}\tValid loss: {:.4f}\tTrain acc: {:.4f}\tTrain loss: {:.4f}".format(accuracy, loss, train_accuracy, train_loss))
+      logger.mainLogger.log_info("Valid acc: {:.4f}\tValid loss: {:.4f}\tTrain acc: {:.4f}\tTrain loss: {:.4f}".format(accuracy, loss, train_accuracy, train_loss))
       
       model.train()
   return logs

@@ -24,5 +24,20 @@ def visualize_training(all_training_logs, show_training=True):
 	plt.show()
 
 def save_logs(logs, filename):
+	try:
+		with open(filename, 'r') as f:
+			logs_total = json.load(f)
+	except Exception as e:
+		pass
+
+	#overwrite logs_total with new info from logs
+	for logs_key in logs.keys():
+		logs_total[logs_key] = logs[logs_key]
+
 	with open(filename, 'w') as f:
-		json.dump(logs, f)
+		json.dump(logs_total, f)
+
+if __name__ == '__main__':
+	with open("trainingLogs.json", 'r') as f:
+		all_training_logs = json.load(f)
+	visualize_training(all_training_logs)

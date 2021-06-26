@@ -5,6 +5,9 @@ from modelUtils import train, validate, load_dataset
 from trainingUtils import visualize_training, save_logs
 import numpy as np
 import os
+import logger
+
+logger.mainLogger.log_info("Test log!")
 
 torch.manual_seed(0)
 np.random.seed(seed=0)
@@ -20,8 +23,8 @@ train_idx = np.random.randint(len(dataset_train), size=1500)
 test_idx = np.random.randint(len(dataset_test), size=500)
 dataset_train = dataset_train[train_idx]
 dataset_test = dataset_test[test_idx]
-"""
 
+"""
 dataset = torch_geometric.datasets.TUDataset(root='/tmp/' + 'ENZYMES', name='ENZYMES')
 dataset = dataset.shuffle()
 
@@ -32,18 +35,18 @@ dataset_test = dataset[cutoff:]
 
 train_loader, test_loader = load_dataset(dataset_train, dataset_test, batch_size=128)
 
-print("[INFO] Loaded dataset.")
+logger.mainLogger.log_info("Loaded dataset.")
 
 # Train
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 epochs = 40
 #model_classes = {"GCN": models.GCN, "GCN SAGPool": models.GCN_SAGPool, "GCN TopKPool": models.GCN_TopKPool, "GCN EdgePool": models.GCN_EdgePool}
-model_classes = {"GCN Experimental": models.GCN_experimental, "GCN": models.GCN}
+model_classes = {"GCN": models.GCN, "GCN SAGPool": models.GCN_SAGPool, "GCN TopKPool": models.GCN_TopKPool}
 
 all_training_logs = {}
 for (model_name, model_class) in model_classes.items():
-  print("[INFO] Begin training " + model_name + ".")
+  logger.mainLogger.log_info("Begin training " + model_name + ".")
 
   model = model_class(dataset_train.num_node_features, dataset_train.num_classes).to(device)
   optimizer = torch.optim.Adam(model.parameters(), lr=5e-4, weight_decay=1e-4)
@@ -52,12 +55,12 @@ for (model_name, model_class) in model_classes.items():
   training_logs = train(model, epochs, train_loader, test_loader, optimizer, loss_function, validate_frequency=1)
   all_training_logs[model_name] = training_logs
 
-  print("[INFO] Finished training " + model_name + ".")
+  logger.mainLogger.log_info("Finished training " + model_name + ".")
 
   model_save_path = os.path.join(os.getcwd(), "trainedModels", model_name+".torch")
   torch.save(model.state_dict(), model_save_path)
 
-  print("[INFO] Saved trained", model_name, "model to path", model_save_path)
+  logger.mainLogger.log_info("Saved trained " + model_name + " model to path " + model_save_path)
 
-save_logs(all_training_logs, "trainingLogs.json")
+save_logs(all_training_logs, "logs/trainingLogs.json")
 visualize_training(all_training_logs)
