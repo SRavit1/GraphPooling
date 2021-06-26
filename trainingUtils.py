@@ -1,9 +1,14 @@
 from matplotlib import pyplot as plt
 import json
 
-def visualize_training(all_training_logs):
-	metrics = ["accuracy", "loss"]
-	fig, axes = plt.subplots(len(metrics))
+def visualize_training(all_training_logs, show_training=True):
+	metrics = ["validation_accuracy", "validation_loss"]
+	if show_training:
+		metrics += ["train_accuracy", "train_loss"]
+		fig, axes = plt.subplots(2, 2)
+		axes = axes.flatten()
+	else:
+		fig, axes = plt.subplots(2)
 	for i in range(len(metrics)):
 		metric = metrics[i]
 		ax = axes[i]
