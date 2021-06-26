@@ -6,39 +6,28 @@ def load_dataset(dataset_train, dataset_test, batch_size=32):
   test_loader = torch_geometric.data.DataLoader(dataset_test, batch_size=batch_size)
   return train_loader, test_loader
 
-
-"""
-def load_dataset(dataset_train, dataset_test, batch_size=32):
-  dataset_train = dataset_train.shuffle()
-  dataset_test = dataset_test.shuffle()
-
-  train_loader = torch_geometric.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
-  test_loader = torch_geometric.data.DataLoader(dataset_test, batch_size=batch_size, shuffle=True)
-  return train_loader, test_loader
-"""
-
 def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_function, validate_frequency=5):
   logs = {"accuracy":{}, "loss":{}}
   model.train()
   for epoch in range(epochs):
-    if (epoch%validate_frequency == 0):
-      print("Epoch {} of {}".format(epoch, epochs), end='\t')
-      accuracy, loss = validate(model, test_data_loader, loss_function)
-
-      logs["accuracy"][epoch] = accuracy
-      logs["loss"][epoch] = loss
-      
-      model.train()
     for batch in train_data_loader:
       optimizer.zero_grad()
       loss = loss_function(model(batch), batch.y)
       loss.backward()
       optimizer.step()
+    if (epoch%validate_frequency == 0):
+      print("Epoch {} of {}".format(epoch, epochs), end='\t')
+      model.eval()
+
+      accuracy, loss = validate(model, test_data_loader, loss_function)
+      logs["accuracy"][epoch] = accuracy
+      logs["loss"][epoch] = loss
+      
+      model.train()
   return logs
 
 #TODO: Use Pytorch methods for accuracy/loss calculations
 def validate(model, test_data_loader, loss_function):
-  model.eval()
   correct = 0
   totalLoss = 0
   totalGraphs = 0

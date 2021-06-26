@@ -44,12 +44,20 @@ class GCN_experimental(torch.nn.Module):
 
 class GCN_model(torch.nn.Module):
     pool_out_indices_default = {"x":0, "edge_index":1, "batch":3}
-    def __init__(self, num_node_features, num_classes, pool_layers=None, pool_out_indices=pool_out_indices_default):
+    def __init__(self, num_node_features, num_classes, pool_layer=None, 
+            pool_out_indices=pool_out_indices_default, pool_ratio=0.25):
         super(GCN_model, self).__init__()
         self.conv1 = torch_geometric.nn.GCNConv(num_node_features, hiddenSize)
         self.conv2 = torch_geometric.nn.GCNConv(hiddenSize, num_classes)
 
-        self.pool_layers = pool_layers
+        self.pool_layer = pool_layer
+        if pool_layer:
+            if pool_layer == torch_geometric.nn.EdgePooling:
+                self.pool1 = self.pool_layer(hiddenSize)
+                self.pool2 = self.pool_layer(num_classes)
+            else:
+                self.pool1 = self.pool_layer(hiddenSize, pool_ratio)
+                self.pool2 = self.pool_layer(num_classes, pool_ratio)
         self.pool_out_indices = pool_out_indices
 
     def forward(self, data):
@@ -59,16 +67,16 @@ class GCN_model(torch.nn.Module):
         x = torch.nn.functional.relu(x)
         x = torch.nn.functional.dropout(x, training=self.training)
 
-        if self.pool_layers and len(self.pool_layers) >= 1:
-            pool_out = self.pool_layers[0](x, edge_index, batch=batch)
+        if self.pool_layer:
+            pool_out = self.pool1(x, edge_index, batch=batch)
             x = pool_out[self.pool_out_indices["x"]]
             edge_index = pool_out[self.pool_out_indices["edge_index"]]
             batch = pool_out[self.pool_out_indices["batch"]]
 
         x = self.conv2(x, edge_index)
 
-        if self.pool_layers and len(self.pool_layers) >= 2:
-            pool_out = self.pool_layers[1](x, edge_index, batch=batch)
+        if self.pool_layer:
+            pool_out = self.pool2(x, edge_index, batch=batch)
             x = pool_out[self.pool_out_indices["x"]]
             edge_index = pool_out[self.pool_out_indices["edge_index"]]
             batch = pool_out[self.pool_out_indices["batch"]]
@@ -85,23 +93,17 @@ class GCN(GCN_model):
 
 class GCN_SAGPool(GCN_model):
     def __init__(self, num_node_features, num_classes):
-        pool1 = torch_geometric.nn.SAGPooling(hiddenSize, 0.25)
-        pool2 = torch_geometric.nn.SAGPooling(num_classes, 0.25)
-        pool_layers = [pool1, pool2]
-        super(GCN_SAGPool, self).__init__(num_node_features, num_classes, pool_layers=pool_layers)
+        super(GCN_SAGPool, self).__init__(num_node_features, num_classes, 
+            pool_layer=torch_geometric.nn.SAGPooling)
 
 class GCN_TopKPool(GCN_model):
     def __init__(self, num_node_features, num_classes):
-        pool1 = torch_geometric.nn.TopKPooling(hiddenSize, 0.25)
-        pool2 = torch_geometric.nn.TopKPooling(num_classes, 0.25)
-        pool_layers = [pool1, pool2]
-        super(GCN_TopKPool, self).__init__(num_node_features, num_classes, pool_layers=pool_layers)
+        super(GCN_TopKPool, self).__init__(num_node_features, num_classes, 
+            pool_layer=torch_geometric.nn.TopKPooling)
 
 class GCN_EdgePool(GCN_model):
     def __init__(self, num_node_features, num_classes):
-        pool1 = torch_geometric.nn.EdgePooling(hiddenSize)
-        pool2 = torch_geometric.nn.EdgePooling(num_classes)
-        pool_layers = [pool1, pool2]
         pool_out_indices = {"x":0, "edge_index":1, "batch":2}
-        super(GCN_EdgePool, self).__init__(num_node_features, num_classes, pool_layers=pool_layers, 
+        super(GCN_EdgePool, self).__init__(num_node_features, num_classes, 
+            pool_layer=torch_geometric.nn.EdgePooling, 
             pool_out_indices=pool_out_indices)
