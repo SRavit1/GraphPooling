@@ -38,6 +38,6 @@ def save_logs(logs, filename):
 		json.dump(logs_total, f)
 
 if __name__ == '__main__':
-	with open("trainingLogs.json", 'r') as f:
+	with open("logs/trainingLogs.json", 'r') as f:
 		all_training_logs = json.load(f)
 	visualize_training(all_training_logs)
