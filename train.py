@@ -47,7 +47,8 @@ logger.mainLogger.log_info("Loaded dataset.")
 
 epochs = 40
 #model_classes = {"GCN": models.GCN, "GCN SAGPool": models.GCN_SAGPool, "GCN TopKPool": models.GCN_TopKPool, "GCN EdgePool": models.GCN_EdgePool}
-model_classes = {"GCN": models.GCN_model, "GCN SAGPool": models.GCN_SAGPool}
+model_classes = {"GCN Concat Linear Edge Pool": models.GCN_EdgePoolConcatLinear,
+  "GCN Subtract Linear Edge Pool": models.GCN_EdgePoolSubtractLinear}
 
 all_training_logs = {}
 for (model_name, model_class) in model_classes.items():
