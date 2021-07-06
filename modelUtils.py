@@ -3,7 +3,7 @@ import torch_geometric
 import logger
 
 def load_dataset(dataset_train, dataset_test, batch_size=32):
-  train_loader = torch_geometric.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
+  train_loader = torch_geometric.data.DataLoader(dataset_train, batch_size=batch_size)
   test_loader = torch_geometric.data.DataLoader(dataset_test, batch_size=batch_size)
   return train_loader, test_loader
 

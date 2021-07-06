@@ -12,14 +12,14 @@ np.random.seed(seed=0)
 
 # Load dataset
 
-
+"""
 dataset_train = torch_geometric.datasets.GNNBenchmarkDataset(root='/tmp/' + 'MNIST', name='MNIST', split='train')
 dataset_test = torch_geometric.datasets.GNNBenchmarkDataset(root='/tmp/' + 'MNIST', name='MNIST', split='test')
 
 dataset_train = dataset_train.shuffle()
 dataset_test = dataset_test.shuffle()
 
-train_idx = np.random.randint(len(dataset_train), size=750)
+train_idx = np.random.randint(len(dataset_train), size=1500)
 test_idx = np.random.randint(len(dataset_test), size=250)
 dataset_train = dataset_train[train_idx]
 dataset_test = dataset_test[test_idx]
@@ -31,7 +31,7 @@ dataset = dataset.shuffle()
 cutoff = int(len(dataset)*0.8)
 dataset_train = dataset[:cutoff]
 dataset_test = dataset[cutoff:]
-"""
+
 
 train_loader, test_loader = load_dataset(dataset_train, dataset_test, batch_size=32)
 
@@ -42,7 +42,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 epochs = 40
 #model_classes = {"GCN": models.GCN, "GCN SAGPool": models.GCN_SAGPool, "GCN TopKPool": models.GCN_TopKPool, "GCN EdgePool": models.GCN_EdgePool}
-model_classes = {"GCN": models.GCN_model, "GCN SAGPool": models.GCN_SAGPool}
+model_classes = {"GCN Concat Linear Edge Pool": models.GCN_EdgePoolConcatLinear,
+  "GCN Subtract Linear Edge Pool": models.GCN_EdgePoolSubtractLinear}
 
 all_training_logs = {}
 for (model_name, model_class) in model_classes.items():

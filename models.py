@@ -1,7 +1,10 @@
 import torch
 import torch_geometric
+from customPooling import edge_pool
 
 hiddenSize = 6
+
+edgePoolingLayers = [torch_geometric.nn.EdgePooling, edge_pool.EdgePooling, edge_pool.EdgePoolingConcatLinear, edge_pool.EdgePoolingSubtractLinear]
 
 class GCN_model(torch.nn.Module):
     pool_out_indices_default = {"x":0, "edge_index":1, "batch":3}
@@ -10,6 +13,8 @@ class GCN_model(torch.nn.Module):
         torch.manual_seed(0)
 
         super(GCN_model, self).__init__()
+
+        # Use ModuleList instead of writing out all layers: https://pytorch.org/docs/stable/generated/torch.nn.ModuleList.html
         self.conv1 = torch_geometric.nn.GCNConv(num_node_features, hiddenSize)
         self.conv2 = torch_geometric.nn.GCNConv(hiddenSize, hiddenSize)
         self.conv3 = torch_geometric.nn.GCNConv(hiddenSize, hiddenSize)
@@ -20,7 +25,7 @@ class GCN_model(torch.nn.Module):
 
         self.pool_layer = pool_layer
         if pool_layer:
-            if pool_layer == torch_geometric.nn.EdgePooling:
+            if pool_layer in edgePoolingLayers:
                 self.pool1 = self.pool_layer(hiddenSize)
                 self.pool2 = self.pool_layer(hiddenSize)
                 self.pool3 = self.pool_layer(hiddenSize)
@@ -90,8 +95,20 @@ class GCN_TopKPool(GCN_model):
             pool_layer=torch_geometric.nn.TopKPooling)
 
 class GCN_EdgePool(GCN_model):
-    def __init__(self, num_node_features, num_classes):
+    def __init__(self, num_node_features, num_classes, pool_layer=torch_geometric.nn.EdgePooling):
         pool_out_indices = {"x":0, "edge_index":1, "batch":2}
         super(GCN_EdgePool, self).__init__(num_node_features, num_classes, 
-            pool_layer=torch_geometric.nn.EdgePooling, 
+            pool_layer=pool_layer, 
             pool_out_indices=pool_out_indices)
+
+class GCN_EdgePoolConcatLinear(GCN_EdgePool):
+    def __init__(self, num_node_features, num_classes):
+        pool_out_indices = {"x":0, "edge_index":1, "batch":2}
+        super(GCN_EdgePoolConcatLinear, self).__init__(num_node_features, num_classes, 
+            pool_layer=edge_pool.EdgePoolingConcatLinear)
+
+class GCN_EdgePoolSubtractLinear(GCN_EdgePool):
+    def __init__(self, num_node_features, num_classes):
+        pool_out_indices = {"x":0, "edge_index":1, "batch":2}
+        super(GCN_EdgePoolSubtractLinear, self).__init__(num_node_features, num_classes, 
+            pool_layer=edge_pool.EdgePoolingSubtractLinear)
