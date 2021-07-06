@@ -7,12 +7,13 @@ def load_dataset(dataset_train, dataset_test, batch_size=32):
   test_loader = torch_geometric.data.DataLoader(dataset_test, batch_size=batch_size)
   return train_loader, test_loader
 
-def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_function, validate_frequency=5):
+def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_function, device, validate_frequency=5):
   logs = {"validation_accuracy":{}, "validation_loss":{}, "train_accuracy":{}, "train_loss":{}}
   model.train()
   for epoch in range(epochs):
     for batch in train_data_loader:
       optimizer.zero_grad()
+      batch.to(device=device)
       loss = loss_function(model(batch), batch.y)
       loss.backward()
       optimizer.step()
@@ -20,8 +21,8 @@ def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_fu
       logger.mainLogger.log_info("Epoch {}/{}".format(epoch, epochs), end='\t')
       model.eval()
 
-      accuracy, loss = validate(model, test_data_loader, loss_function)
-      train_accuracy, train_loss = validate(model, train_data_loader, loss_function, numBatches=32)
+      accuracy, loss = validate(model, test_data_loader, loss_function, device)
+      train_accuracy, train_loss = validate(model, train_data_loader, loss_function, device, numBatches=32)
 
       logs["validation_accuracy"][epoch] = accuracy
       logs["validation_loss"][epoch] = loss
@@ -34,13 +35,14 @@ def train(model, epochs, train_data_loader, test_data_loader, optimizer, loss_fu
   return logs
 
 #TODO: Use Pytorch methods for accuracy/loss calculations
-def validate(model, test_data_loader, loss_function, numBatches=None):
+def validate(model, test_data_loader, loss_function, device, numBatches=None):
   correct = 0
   totalLoss = 0
   totalGraphs = 0
   totalBatches = 0
 
   for batch in test_data_loader:
+    batch.to(device)
     prediction = model(batch)
 
     loss = loss_function(prediction, batch.y)

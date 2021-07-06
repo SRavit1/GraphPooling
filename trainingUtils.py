@@ -1,3 +1,6 @@
+import matplotlib
+#matplotlib.use('agg')
+
 from matplotlib import pyplot as plt
 import json
 
@@ -22,13 +25,14 @@ def visualize_training(all_training_logs, show_training=True):
 
 	fig.tight_layout()
 	plt.show()
+	plt.savefig("trainingFig.png")
 
 def save_logs(logs, filename):
 	try:
 		with open(filename, 'r') as f:
 			logs_total = json.load(f)
 	except Exception as e:
-		pass
+		logs_total = {}
 
 	#overwrite logs_total with new info from logs
 	for logs_key in logs.keys():

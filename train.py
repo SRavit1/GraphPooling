@@ -10,8 +10,14 @@ import logger
 torch.manual_seed(0)
 np.random.seed(seed=0)
 
-# Load dataset
+#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+if torch.cuda.is_available():
+  device = torch.device('cuda')
+  torch.cuda.set_device(4)
+else:
+  device = torch.device('cpu')
 
+# Load dataset
 
 dataset_train = torch_geometric.datasets.GNNBenchmarkDataset(root='/tmp/' + 'MNIST', name='MNIST', split='train')
 dataset_test = torch_geometric.datasets.GNNBenchmarkDataset(root='/tmp/' + 'MNIST', name='MNIST', split='test')
@@ -19,10 +25,10 @@ dataset_test = torch_geometric.datasets.GNNBenchmarkDataset(root='/tmp/' + 'MNIS
 dataset_train = dataset_train.shuffle()
 dataset_test = dataset_test.shuffle()
 
-train_idx = np.random.randint(len(dataset_train), size=750)
-test_idx = np.random.randint(len(dataset_test), size=250)
-dataset_train = dataset_train[train_idx]
-dataset_test = dataset_test[test_idx]
+train_idx = np.random.randint(len(dataset_train), size=10000)
+test_idx = np.random.randint(len(dataset_test), size=1000)
+dataset_train = dataset_train#[train_idx]
+dataset_test = dataset_test#[test_idx]
 
 """
 dataset = torch_geometric.datasets.TUDataset(root='/tmp/' + 'ENZYMES', name='ENZYMES')
@@ -33,12 +39,11 @@ dataset_train = dataset[:cutoff]
 dataset_test = dataset[cutoff:]
 """
 
-train_loader, test_loader = load_dataset(dataset_train, dataset_test, batch_size=32)
+train_loader, test_loader = load_dataset(dataset_train, dataset_test, batch_size=128)
 
 logger.mainLogger.log_info("Loaded dataset.")
 
 # Train
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 epochs = 40
 #model_classes = {"GCN": models.GCN, "GCN SAGPool": models.GCN_SAGPool, "GCN TopKPool": models.GCN_TopKPool, "GCN EdgePool": models.GCN_EdgePool}
@@ -53,7 +58,7 @@ for (model_name, model_class) in model_classes.items():
   optimizer = torch.optim.Adam(model.parameters(), lr=5e-4, weight_decay=1e-4)
   loss_function = torch.nn.functional.nll_loss
 
-  training_logs = train(model, epochs, train_loader, test_loader, optimizer, loss_function, validate_frequency=1)
+  training_logs = train(model, epochs, train_loader, test_loader, optimizer, loss_function, device, validate_frequency=1)
   all_training_logs[model_name] = training_logs
 
   logger.mainLogger.log_info("Finished training " + model_name + ".")
